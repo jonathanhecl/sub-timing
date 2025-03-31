@@ -4,7 +4,7 @@ A cross-platform SRT/SSA subtitle timing correction tool.
 ## Usage
 
 ```bash
-sub-timing [action] -s=source.srt -o=output.srt [-f=00:00:00.000]
+sub-timing [action] -s=source.srt [-o=output.srt] [-f=00:00:00.000]
 ```
 
 ## Parameters
@@ -12,5 +12,5 @@ sub-timing [action] -s=source.srt -o=output.srt [-f=00:00:00.000]
 - `[action]`: Action to perform:
   - `move`: Move subtitle timing using first line appearance time
 - `-s`: Source subtitle file
-- `-o`: Output subtitle file
+- `-o`: Output subtitle file (default: source_modified.srt)
 - `-f`: First line appearance time
