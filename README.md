@@ -30,13 +30,13 @@ SubTiming [mode] -s=source.srt [-o=output.srt] [-f=" 00:00:00.000"] [-d="00:00:0
 
 ```bash
 # Move subtitle timing based on first line appearance time
-SubTiming move -s=source.srt -o=destination.srt -f="00:00:00.000"
+SubTiming move -s=source.srt -f="00:00:00.000"
 
 # Shift subtitle timing by a specified duration
-SubTiming shift -s=source.srt -o=destination.srt -d="-00:00:00.000"
+SubTiming shift -s=source.srt -d="-00:00:00.000"
 
 # Adjust the subtitle timing by a specified duration (between the first line and the last line)
-SubTiming adjust -s=source.srt -o=destination.srt -f="00:00:00.000" -l="00:00:00.000"
+SubTiming adjust -s=source.srt -f="00:00:00.000" -l="00:00:00.000"
 ```
 
 ## License
