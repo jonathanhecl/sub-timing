@@ -91,6 +91,8 @@ func main() {
 		}
 	}
 
+	// Print parameters
+	start := time.Now()
 	fmt.Println("Source:", source)
 	fmt.Println("Target:", target)
 	fmt.Println("Mode:", mode)
@@ -112,7 +114,7 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Total lines: %d\n\n", len(sub.Lines))
+	fmt.Printf("Total lines: %d\n", len(sub.Lines))
 
 	switch mode {
 	case "move":
@@ -120,7 +122,7 @@ func main() {
 	case "shift":
 		sub = subShift(sub, shift, negativeShift)
 	case "adjust":
-		// sub = subAdjust(sub, firstLine, lastLine)
+		sub = subAdjust(sub, firstLine, lastLine)
 	}
 
 	// Save modified subtitle file
@@ -130,12 +132,13 @@ func main() {
 		return
 	}
 
-	fmt.Println("\nDone.")
+	fmt.Printf("Time taken: %s\n", time.Since(start))
+	fmt.Println("Done.")
 
 }
 
 // Parse duration string into time.Duration
-// Example: "0:00:00.000" (h:mm:ss.mmm) -> 0
+// Format: "0:00:00.000" (h:mm:ss.mmm)
 func parseDuration(duration string) (time.Duration, error) {
 	duration = strings.TrimSpace(duration)
 
@@ -180,11 +183,19 @@ func parseDuration(duration string) (time.Duration, error) {
 func subMove(sub subtitles.Subtitle, firstLine time.Duration) subtitles.Subtitle {
 	ret := sub
 
+	// If there are no lines, return the original subtitle
+	if len(ret.Lines) == 0 {
+		return ret
+	}
+
+	// Calculate the time difference between the first line and the target time
 	diff := ret.Lines[0].Start - firstLine
 
+	// Adjust the first line
 	ret.Lines[0].Start = firstLine
 	ret.Lines[0].End = ret.Lines[0].End - diff
 
+	// Adjust the remaining lines
 	for i := 1; i < len(ret.Lines); i++ {
 		ret.Lines[i].Start = ret.Lines[i].Start - diff
 		ret.Lines[i].End = ret.Lines[i].End - diff
@@ -195,6 +206,12 @@ func subMove(sub subtitles.Subtitle, firstLine time.Duration) subtitles.Subtitle
 func subShift(sub subtitles.Subtitle, shift time.Duration, negativeShift bool) subtitles.Subtitle {
 	ret := sub
 
+	// If there are no lines, return the original subtitle
+	if len(ret.Lines) == 0 {
+		return ret
+	}
+
+	// Shift each subtitle line
 	for i := 0; i < len(ret.Lines); i++ {
 		if negativeShift {
 			ret.Lines[i].Start = ret.Lines[i].Start - shift
@@ -204,5 +221,51 @@ func subShift(sub subtitles.Subtitle, shift time.Duration, negativeShift bool) s
 			ret.Lines[i].End = ret.Lines[i].End + shift
 		}
 	}
+	return ret
+}
+
+func subAdjust(sub subtitles.Subtitle, firstLine time.Duration, lastLine time.Duration) subtitles.Subtitle {
+	ret := sub
+
+	// If there are no lines, return the original subtitle
+	if len(ret.Lines) == 0 {
+		return ret
+	}
+
+	// If there's only one line, simply set it to the firstLine
+	if len(ret.Lines) == 1 {
+		duration := ret.Lines[0].End - ret.Lines[0].Start
+		ret.Lines[0].Start = firstLine
+		ret.Lines[0].End = firstLine + duration
+		return ret
+	}
+
+	// Get the original start times of first and last subtitles
+	originalFirstStart := ret.Lines[0].Start
+	originalLastStart := ret.Lines[len(ret.Lines)-1].Start
+
+	// Calculate the original time span and the new time span
+	originalSpan := originalLastStart - originalFirstStart
+	newSpan := lastLine - firstLine
+
+	// Calculate the scaling factor for proportional adjustment
+	scaleFactor := float64(newSpan) / float64(originalSpan)
+
+	// Adjust each subtitle line
+	for i := 0; i < len(ret.Lines); i++ {
+		// Calculate the original offset from the first subtitle
+		originalOffset := ret.Lines[i].Start - originalFirstStart
+
+		// Calculate the duration of the current subtitle
+		duration := ret.Lines[i].End - ret.Lines[i].Start
+
+		// Calculate the new start time based on proportional scaling
+		newStart := firstLine + time.Duration(float64(originalOffset)*scaleFactor)
+
+		// Set the new start and end times
+		ret.Lines[i].Start = newStart
+		ret.Lines[i].End = newStart + duration
+	}
+
 	return ret
 }
