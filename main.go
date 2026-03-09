@@ -48,6 +48,9 @@ func main() {
 
 	if source == "" {
 		fmt.Println("Error: Source file not specified")
+		fmt.Println("Usage: sub-timing -s=<source> -t=<target> -m=<mode> -f=<first_line> -l=<last_line> -d=<shift>")
+		fmt.Println("Modes: move, shift, adjust")
+		fmt.Println("Format: h:mm:ss.mmm")
 		return
 	}
 
